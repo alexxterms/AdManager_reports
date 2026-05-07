@@ -17,9 +17,16 @@ class Point:
 
 @dataclass(frozen=True)
 class Settings:
-    slack_bot_token: str
+    slack_bot_token: str | None
     slack_app_token: str
     slack_signing_secret: str
+    slack_client_id: str | None
+    slack_client_secret: str | None
+    slack_scopes: list[str]
+    slack_user_scopes: list[str]
+    slack_redirect_uri: str | None
+    oauth_installation_store_dir: Path
+    oauth_state_store_dir: Path
     ad_manager_user_id: str
     allowed_channel_ids: set[str]
     dm_recipient_ids: list[str]
@@ -59,9 +66,32 @@ def load_settings() -> Settings:
     load_dotenv()
 
     ad_manager_user_id = _required_env("SLACK_AD_MANAGER_USER_ID")
-    slack_bot_token = _required_env("SLACK_BOT_TOKEN")
+    slack_bot_token = os.getenv("SLACK_BOT_TOKEN", "").strip() or None
     slack_app_token = _required_env("SLACK_APP_TOKEN")
     slack_signing_secret = _required_env("SLACK_SIGNING_SECRET")
+    slack_client_id = os.getenv("SLACK_CLIENT_ID", "").strip() or None
+    slack_client_secret = os.getenv("SLACK_CLIENT_SECRET", "").strip() or None
+    slack_scopes = _parse_csv(
+        os.getenv(
+            "SLACK_SCOPES",
+            "channels:history,chat:write,files:write,groups:history,im:history,mpim:history",
+        )
+    )
+    slack_user_scopes = _parse_csv(os.getenv("SLACK_USER_SCOPES", ""))
+    slack_redirect_uri = os.getenv("SLACK_REDIRECT_URI", "").strip() or None
+    oauth_installation_store_dir = Path(
+        os.getenv("OAUTH_INSTALLATION_STORE_DIR", "state/slack_installations")
+    ).resolve()
+    oauth_state_store_dir = Path(
+        os.getenv("OAUTH_STATE_STORE_DIR", "state/slack_oauth_states")
+    ).resolve()
+
+    # Require either a fixed bot token OR OAuth client credentials.
+    if not slack_bot_token and not (slack_client_id and slack_client_secret):
+        raise ValueError(
+            "Missing Slack auth configuration. Provide SLACK_BOT_TOKEN "
+            "or both SLACK_CLIENT_ID and SLACK_CLIENT_SECRET."
+        )
 
     allowed_channels_raw = os.getenv("SLACK_ALLOWED_CHANNEL_IDS", "").strip()
     allowed_channel_ids = set(_parse_csv(allowed_channels_raw)) if allowed_channels_raw else set()
@@ -90,6 +120,8 @@ def load_settings() -> Settings:
 
     output_dir.mkdir(parents=True, exist_ok=True)
     idempotency_db_path.parent.mkdir(parents=True, exist_ok=True)
+    oauth_installation_store_dir.mkdir(parents=True, exist_ok=True)
+    oauth_state_store_dir.mkdir(parents=True, exist_ok=True)
 
     if not pdf_template_path.exists():
         raise ValueError(f"Template PDF not found: {pdf_template_path}")
@@ -98,6 +130,13 @@ def load_settings() -> Settings:
         slack_bot_token=slack_bot_token,
         slack_app_token=slack_app_token,
         slack_signing_secret=slack_signing_secret,
+        slack_client_id=slack_client_id,
+        slack_client_secret=slack_client_secret,
+        slack_scopes=slack_scopes,
+        slack_user_scopes=slack_user_scopes,
+        slack_redirect_uri=slack_redirect_uri,
+        oauth_installation_store_dir=oauth_installation_store_dir,
+        oauth_state_store_dir=oauth_state_store_dir,
         ad_manager_user_id=ad_manager_user_id,
         allowed_channel_ids=allowed_channel_ids,
         dm_recipient_ids=dm_recipient_ids,

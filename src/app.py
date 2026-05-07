@@ -16,6 +16,7 @@ from src.groq_service import GroqInsightService
 from src.parser import parse_metrics_message
 from src.slack_delivery import send_text_to_channel, upload_pdf_to_channel
 from src.html_renderer import render_report_html
+from src.slack_oauth import build_authorize
 
 logging.basicConfig(
     level=logging.INFO,
@@ -45,7 +46,10 @@ def main() -> None:
         "Allowed channels: %s",
         settings.allowed_channel_ids if settings.allowed_channel_ids else "any",
     )
-    app = App(token=settings.slack_bot_token, signing_secret=settings.slack_signing_secret)
+    if settings.slack_bot_token:
+        app = App(token=settings.slack_bot_token, signing_secret=settings.slack_signing_secret)
+    else:
+        app = App(signing_secret=settings.slack_signing_secret, authorize=build_authorize(settings))
 
     @app.event("message")
     def handle_message_events(event, client, logger):  # type: ignore[no-untyped-def]

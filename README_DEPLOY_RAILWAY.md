@@ -4,6 +4,11 @@ Overview
 
 This project listens for Slack messages from a specific user, parses weekly metrics, renders a PDF report (via Playwright) in-memory, and uploads the PDF to Slack. This README explains how to deploy the pipeline to Railway using the provided Dockerfile (recommended) or via Git integration.
 
+For multi-workspace installs, deploy TWO Railway services from the same repo:
+
+- Worker service: runs the Slack Socket Mode bot (`python -m src.app`)
+- Web service: runs OAuth install/callback endpoints (`python -m src.oauth_web`)
+
 What I'll cover
 
 - Required environment variables
@@ -17,6 +22,13 @@ Required environment variables (set these in Railway - Environment tab)
 - SLACK_BOT_TOKEN — Slack bot token (xoxb-...)
 - SLACK_APP_TOKEN — Slack app-level token (xapp-...)
 - SLACK_SIGNING_SECRET — Slack signing secret
+- SLACK_CLIENT_ID — Slack OAuth client ID (required for OAuth web service)
+- SLACK_CLIENT_SECRET — Slack OAuth client secret (required for OAuth web service)
+- SLACK_REDIRECT_URI — full callback URL, e.g. `https://<web-domain>/slack/oauth_redirect`
+- SLACK_SCOPES — bot scopes CSV for install flow
+- SLACK_USER_SCOPES — optional user scopes CSV
+- OAUTH_INSTALLATION_STORE_DIR — install store folder path (default `state/slack_installations`)
+- OAUTH_STATE_STORE_DIR — OAuth state store folder path (default `state/slack_oauth_states`)
 - SLACK_AD_MANAGER_USER_ID — Slack user ID the bot should accept submissions from
 - SLACK_ALLOWED_CHANNEL_IDS — optional comma-separated channel IDs (empty = allow any)
 - SLACK_DM_RECIPIENT_IDS — comma-separated user ids for any DM notifications
@@ -39,6 +51,9 @@ Notes on `IDEMPOTENCY_DB_PATH` and history DBs
 Railway Service Type & Resource Guidance
 
 - Service type: **Worker** (not HTTP) — the app uses Slack Socket Mode and runs continuously.
+- Service types for multi-workspace install:
+  - **Worker** service for bot runtime (`python -m src.app`)
+  - **Web** service for OAuth endpoints (`python -m src.oauth_web`)
 - Minimum recommended resources for Playwright:
   - 1 vCPU, 2 GB RAM — *may* be sufficient but could be slow launching browsers on cold starts.
   - Recommended: **2 vCPU, 4 GB RAM** for reliable performance and lower latency when Playwright launches Chromium.
@@ -92,9 +107,15 @@ Railway-specific quick steps (GitHub deploy)
    - https://railway.app/
    - `npm i -g railway` (optional)
 2. From Railway dashboard → New Project → Deploy from GitHub → select repo → Deploy
-3. Set environment variables in the Railway project settings
-4. Allocate resources (2 vCPU, 4 GB RAM recommended)
-5. Start service and watch logs
+3. Create two services from the same repo:
+  - Service A (worker): start command `python -m src.app`
+  - Service B (web): start command `python -m src.oauth_web`
+4. Generate a domain for the web service and copy it
+5. Set `SLACK_REDIRECT_URI=https://<web-domain>/slack/oauth_redirect`
+6. In Slack app settings, set Redirect URL to the same value
+7. Set environment variables in both services
+8. Allocate resources (2 vCPU, 4 GB RAM recommended for worker)
+9. Start services and watch logs
 
 What to watch in the logs
 
