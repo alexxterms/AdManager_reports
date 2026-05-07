@@ -1,0 +1,11 @@
+__pycache__/
+.git/
+.env
+output/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.db
+.vscode/
+node_modules/

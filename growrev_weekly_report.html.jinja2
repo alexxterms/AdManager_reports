@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GrowRev Weekly Report – Active Cycle ({{ report_date }})</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ── PRINT SETUP ── */
+    @page {
+      size: A4;
+      margin: 0;
+    }
+
+    :root {
+      --teal: #00c4a7;
+      --teal-light: #c6f4ed;
+      --teal-mid: #7de4d4;
+      --teal-dark: #007a6b;
+      --teal-deeper: #005a4e;
+      --dark: #0a2e28;
+      --darker: #071e1a;
+      --white: #ffffff;
+      --text-dark: #0d2b25;
+      --row-odd: #d0f5ef;
+      --row-even: #aeeae0;
+      --header-bg: #1a5c52;
+      --up-green: #1a9e3f;
+      --down-red: #cc2200;
+
+      /* A4 at 96 dpi: 794px × 1123px */
+      --page-w: 210mm;
+      --page-h: 297mm;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Barlow', sans-serif;
+      background: #555;
+      /* grey gutters in browser */
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ── EVERY PAGE IS EXACTLY A4 ── */
+    .page {
+      width: var(--page-w);
+      height: var(--page-h);
+      margin: 0 auto 8mm;
+      /* gap between pages in browser only */
+      overflow: hidden;
+      position: relative;
+      page-break-after: always;
+      break-after: page;
+    }
+
+    @media print {
+      body {
+        background: none;
+      }
+
+      .page {
+        margin: 0;
+      }
+    }
+
+    /* ════════════════════════════════
+     PAGE 1 — COVER
+  ════════════════════════════════ */
+    .cover {
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(ellipse at 30% 20%, rgba(0, 196, 167, 0.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 80%, rgba(0, 90, 78, 0.5) 0%, transparent 60%),
+        linear-gradient(160deg, #0f3830 0%, #071e1a 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .note-card {
+      background: var(--teal-light);
+      border-radius: 6px;
+      padding: 52px 48px 64px;
+      width: 360px;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      background-image:
+        linear-gradient(rgba(0, 184, 160, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 184, 160, 0.1) 1px, transparent 1px);
+      background-size: 18px 18px;
+    }
+
+    .clip {
+      position: absolute;
+      top: -20px;
+      left: 38px;
+      width: 42px;
+      height: 58px;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    }
+
+    .star-deco {
+      position: absolute;
+      left: 22px;
+      top: 106px;
+      width: 36px;
+      height: 36px;
+      opacity: 0.9;
+    }
+
+    .note-brand {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--text-dark);
+      margin-bottom: 2px;
+    }
+
+    .note-brand .g {
+      color: var(--teal-dark);
+    }
+
+    .note-cycle {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      color: var(--text-dark);
+      opacity: 0.7;
+      margin-bottom: 14px;
+    }
+
+    .note-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 84px;
+      line-height: 0.88;
+      color: var(--text-dark);
+      letter-spacing: 2px;
+      margin-bottom: 28px;
+    }
+
+    .swirl {
+      width: 140px;
+      margin: 0 auto;
+    }
+
+    /* ════════════════════════════════
+     PAGE 2 — TABLE OF CONTENTS
+  ════════════════════════════════ */
+    .toc {
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(ellipse at 85% 10%, rgba(0, 196, 167, 0.2) 0%, transparent 50%),
+        linear-gradient(150deg, #175c4e 0%, #0d3830 35%, #071e1a 100%);
+      padding: 56px 52px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    .toc-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 74px;
+      line-height: 0.88;
+      color: var(--white);
+      letter-spacing: 3px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid rgba(0, 196, 167, 0.35);
+      margin-bottom: 36px;
+    }
+
+    .toc-items {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .toc-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(0, 196, 167, 0.25);
+      border-left: 4px solid var(--teal);
+      border-radius: 6px;
+      padding: 16px 22px;
+    }
+
+    .toc-num {
+      background: var(--teal);
+      color: var(--text-dark);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 16px;
+      width: 36px;
+      height: 36px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .toc-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: 1.5px;
+      color: var(--white);
+    }
+
+    /* ════════════════════════════════
+     SHARED WHITE PAGE
+  ════════════════════════════════ */
+    .white-page {
+      width: 100%;
+      height: 100%;
+      background: #f4fffe;
+      color: var(--text-dark);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .page-label {
+      position: absolute;
+      top: 14px;
+      right: 20px;
+      font-style: italic;
+      font-size: 11px;
+      color: #aaa;
+      letter-spacing: 0.3px;
+    }
+
+    .sec-banner {
+      background: linear-gradient(90deg, var(--teal-deeper) 0%, var(--teal-dark) 60%, var(--teal) 100%);
+      padding: 18px 28px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .sec-banner.dark-banner {
+      background: linear-gradient(90deg, #071e1a 0%, #175c4e 60%, #00c4a7 100%);
+    }
+
+    .sec-icon {
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .sec-icon svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .sec-banner-text .title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 30px;
+      letter-spacing: 2px;
+      color: var(--white);
+      line-height: 1;
+    }
+
+    .sec-banner-text .subtitle {
+      font-style: italic;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.75);
+      margin-top: 3px;
+    }
+
+    /* ── METRICS TABLE ── */
+    .metrics-wrap {
+      padding: 20px 28px 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .metrics-heading {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 20px;
+      color: var(--teal-dark);
+      margin-bottom: 14px;
+      padding-bottom: 7px;
+      border-bottom: 2px solid var(--teal-mid);
+      letter-spacing: 0.4px;
+      flex-shrink: 0;
+    }
+
+    table.metrics {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 3px 16px rgba(0, 100, 88, 0.12);
+    }
+
+    table.metrics thead tr {
+      background: var(--header-bg);
+    }
+
+    table.metrics thead th {
+      padding: 11px 14px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: 1.8px;
+      text-align: center;
+      color: var(--white);
+      text-transform: uppercase;
+    }
+
+    table.metrics thead th:first-child {
+      text-align: left;
+    }
+
+    table.metrics tbody tr:nth-child(odd) {
+      background: var(--row-odd);
+    }
+
+    table.metrics tbody tr:nth-child(even) {
+      background: var(--row-even);
+    }
+
+    table.metrics tbody tr {
+      border-bottom: 1px solid rgba(0, 120, 100, 0.1);
+    }
+
+    table.metrics tbody td {
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-dark);
+      text-align: center;
+    }
+
+    table.metrics tbody td:first-child {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: 0.8px;
+      color: var(--teal-deeper);
+      text-align: left;
+    }
+
+    .up {
+      color: var(--up-green);
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .down {
+      color: var(--down-red);
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .neutral {
+      color: #888;
+      font-size: 12px;
+    }
+
+    /* ── CONTENT LISTS ── */
+    .content-area {
+      padding: 20px 28px 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .content-area h3 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+      color: var(--teal-dark);
+      margin-bottom: 14px;
+      letter-spacing: 0.4px;
+    }
+
+    .card-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .card-list li {
+      background: #fff;
+      border-left: 4px solid var(--teal);
+      border-radius: 4px;
+      padding: 11px 16px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #1a3b35;
+      box-shadow: 0 2px 6px rgba(0, 100, 88, 0.07);
+    }
+
+    /* Page 2 — split layout: Obstacles top, Opportunities bottom */
+    .split-page {
+      width: 100%;
+      height: 100%;
+      background: #f4fffe;
+      color: var(--text-dark);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .half {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .half-divider {
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--teal), transparent);
+      opacity: 0.35;
+      flex-shrink: 0;
+    }
+
+    /* ════════════════════════════════
+     PAGE 4 — UPDATES / MISC
+  ════════════════════════════════ */
+    .updates-bg {
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(ellipse at 55% 25%, rgba(0, 196, 167, 0.18) 0%, transparent 55%),
+        linear-gradient(155deg, #175c4e 0%, #0d3830 40%, #071e1a 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 64px 56px 60px;
+    }
+
+    .updates-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 68px;
+      color: var(--white);
+      letter-spacing: 4px;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+
+    .swirl-line {
+      width: 180px;
+      margin: 0 auto 48px;
+    }
+
+    .updates-list {
+      list-style: none;
+      width: 100%;
+      max-width: 560px;
+    }
+
+    .updates-list li {
+      position: relative;
+      padding-left: 20px;
+      font-size: 15px;
+      line-height: 1.7;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .updates-list li::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: var(--teal);
+      font-size: 20px;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══════ PAGE 1: COVER ══════ -->
+  <div class="page">
+    <div class="cover">
+      <div class="note-card">
+        <div class="clip">
+          <svg viewBox="0 0 46 68" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M23 6C13.6 6 6 13.6 6 23V48C6 59.6 13.6 66 23 66C32.4 66 40 59.6 40 48V24" stroke="#00c4a7"
+              stroke-width="4.5" stroke-linecap="round" fill="none" />
+            <path
+              d="M40 24C40 15.8 33.2 10 23 10C12.8 10 10 16.4 10 24V48C10 57.2 15.6 62 23 62C30.4 62 36 57.2 36 48V26"
+              stroke="#00c4a7" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.55" />
+          </svg>
+        </div>
+        <div class="star-deco">
+          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 2L24.5 14.5H38L27.5 22L31.5 34.5L20 27L8.5 34.5L12.5 22L2 14.5H15.5L20 2Z" stroke="#00c4a7"
+              stroke-width="2.5" fill="none" />
+          </svg>
+        </div>
+        <div class="note-brand"><span class="g">G</span>rowRev</div>
+        <div class="note-cycle">ACTIVE CYCLE &nbsp;&nbsp;({{ report_date }})</div>
+        <div class="note-title">WEEKLY<br>REPORT</div>
+        <div class="swirl">
+          <svg viewBox="0 0 140 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 13 Q35 4 70 9 Q105 14 132 7" stroke="#007a6b" stroke-width="3" stroke-linecap="round"
+              fill="none" />
+            <path d="M24 16 Q60 9 96 13" stroke="#007a6b" stroke-width="1.8" stroke-linecap="round" fill="none"
+              opacity="0.5" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ PAGE 2: TABLE OF CONTENTS ══════ -->
+  <div class="page">
+    <div class="toc">
+      <div class="toc-title">TABLE OF<br>CONTENTS</div>
+      <div class="toc-items">
+        <div class="toc-item">
+          <div class="toc-num">01</div>
+          <div class="toc-label">PROGRESS AND ACCOMPLISHMENTS</div>
+        </div>
+        <div class="toc-item">
+          <div class="toc-num">02</div>
+          <div class="toc-label">OBSTACLES</div>
+        </div>
+        <div class="toc-item">
+          <div class="toc-num">03</div>
+          <div class="toc-label">OPPORTUNITIES</div>
+        </div>
+        <div class="toc-item">
+          <div class="toc-num">04</div>
+          <div class="toc-label">FEEDBACK</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ PAGE 3: PROGRESS & ACCOMPLISHMENTS ══════ -->
+  <div class="page" style="position:relative;">
+    <div class="white-page">
+      <span class="page-label">PAGE : 1</span>
+      <div class="sec-banner">
+        <div class="sec-icon">
+          <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 4C18 4 27 9 27 19L22 24H14L9 19C9 9 18 4 18 4Z" fill="rgba(255,255,255,0.2)" stroke="white"
+              stroke-width="1.6" />
+            <circle cx="18" cy="16" r="3.2" fill="white" />
+            <path d="M14 24L11 30M22 24L25 30" stroke="white" stroke-width="1.6" stroke-linecap="round" />
+            <path d="M9 19C7 21 6.5 23.5 8 25L10 23" stroke="white" stroke-width="1.3" stroke-linecap="round" />
+            <path d="M27 19C29 21 29.5 23.5 28 25L26 23" stroke="white" stroke-width="1.3" stroke-linecap="round" />
+          </svg>
+        </div>
+        <div class="sec-banner-text">
+          <div class="title">PROGRESS &amp; ACCOMPLISHMENTS</div>
+        </div>
+      </div>
+      <div class="metrics-wrap">
+        <div class="metrics-heading">CAMPAIGN METRICS &mdash; {{ report_date }}</div>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Criteria</th>
+              <th>Previous 7 Days</th>
+              <th>Last 7 Days ({{ report_date }})</th>
+              <th>% Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in metrics_rows %}
+            <tr>
+              <td>{{ row.label }}</td>
+              <td>{{ row.previous }}</td>
+              <td>{{ row.current }}</td>
+              <td><span class="{{ row.change_class }}">{{ row.change }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ PAGE 4: OBSTACLES + OPPORTUNITIES ══════ -->
+  <div class="page" style="position:relative;">
+    <div class="split-page">
+      <span class="page-label">PAGE : 2</span>
+
+      <!-- TOP HALF: OBSTACLES -->
+      <div class="half">
+        <div class="sec-banner">
+          <div class="sec-icon">
+            <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="4" y="10" width="28" height="16" rx="3" fill="rgba(255,255,255,0.15)" stroke="white"
+                stroke-width="1.6" />
+              <line x1="5" y1="11" x2="31" y2="25" stroke="white" stroke-width="2.5" stroke-linecap="round" />
+              <line x1="5" y1="25" x2="31" y2="11" stroke="white" stroke-width="2.5" stroke-linecap="round" />
+              <line x1="13" y1="26" x2="11" y2="33" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+              <line x1="23" y1="26" x2="25" y2="33" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+          </div>
+          <div class="sec-banner-text">
+            <div class="title">OBSTACLES</div>
+            <div class="subtitle">These are obstacles that we are currently facing in achieving our goals.</div>
+          </div>
+        </div>
+        <div class="content-area">
+          <h3>Problems :</h3>
+          <ul class="card-list">
+            {% for problem in problems %}
+            <li>{{ problem }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+
+      <div class="half-divider"></div>
+
+      <!-- BOTTOM HALF: OPPORTUNITIES -->
+      <div class="half">
+        <div class="sec-banner dark-banner">
+          <div class="sec-icon">
+            <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 4C12 4 7 9 7 15C7 22 18 32 18 32C18 32 29 22 29 15C29 9 24 4 18 4Z"
+                fill="rgba(255,255,255,0.2)" stroke="white" stroke-width="1.7" />
+              <circle cx="18" cy="15" r="4" fill="white" />
+              <path d="M10 32H26" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+              <path d="M13 34H23" stroke="white" stroke-width="1.2" stroke-linecap="round" opacity="0.6" />
+            </svg>
+          </div>
+          <div class="sec-banner-text">
+            <div class="title">OPPORTUNITIES</div>
+            <div class="subtitle">These are a list of actions we can take to enhance performance next week.</div>
+          </div>
+        </div>
+        <div class="content-area">
+          <h3>Solution :</h3>
+          <ul class="card-list">
+            {% for solution in solutions %}
+            <li>{{ solution }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ PAGE 5: UPDATES / MISC ══════ -->
+  <div class="page" style="position:relative;">
+    <span
+      style="position:absolute;top:14px;right:20px;font-style:italic;font-size:11px;color:rgba(255,255,255,0.35);z-index:2;">PAGE
+      : 3</span>
+    <div class="updates-bg">
+      <div class="updates-title">UPDATES / MISC</div>
+      <div class="swirl-line">
+        <svg viewBox="0 0 180 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 14 Q45 4 90 11 Q135 17 172 8" stroke="#00c4a7" stroke-width="3" stroke-linecap="round"
+            fill="none" />
+          <path d="M26 18 Q72 10 128 15" stroke="#00c4a7" stroke-width="1.8" stroke-linecap="round" fill="none"
+            opacity="0.5" />
+        </svg>
+      </div>
+      <ul class="updates-list">
+        <li>Please Contact Slack Channel If You Have Any Questions !</li>
+      </ul>
+    </div>
+  </div>
+
+</body>
+
+</html>
