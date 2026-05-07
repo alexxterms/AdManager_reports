@@ -48,6 +48,11 @@ Notes on `IDEMPOTENCY_DB_PATH` and history DBs
 
 - The app uses SQLite files for idempotency and metrics history. In Railway, you can store these on the container filesystem (ephemeral) or use an external persistent volume. If you want persistence across deploys, consider attaching a persistent volume.
 
+Important for multi-workspace OAuth mode:
+
+- If you are using `SLACK_CLIENT_ID` and `SLACK_CLIENT_SECRET`, remove `SLACK_BOT_TOKEN` from the worker service variables so the worker uses the installed workspace token from OAuth.
+- Keeping an old `SLACK_BOT_TOKEN` can make uploads go to the wrong workspace and cause `channel_not_found` during file upload.
+
 Railway Service Type & Resource Guidance
 
 - Service type: **Worker** (not HTTP) — the app uses Slack Socket Mode and runs continuously.

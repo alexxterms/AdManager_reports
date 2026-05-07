@@ -46,10 +46,14 @@ def main() -> None:
         "Allowed channels: %s",
         settings.allowed_channel_ids if settings.allowed_channel_ids else "any",
     )
-    if settings.slack_bot_token:
+    if settings.slack_client_id and settings.slack_client_secret:
+        app = App(signing_secret=settings.slack_signing_secret, authorize=build_authorize(settings))
+    elif settings.slack_bot_token:
         app = App(token=settings.slack_bot_token, signing_secret=settings.slack_signing_secret)
     else:
-        app = App(signing_secret=settings.slack_signing_secret, authorize=build_authorize(settings))
+        raise ValueError(
+            "Missing Slack bot configuration. Provide either OAuth client credentials or SLACK_BOT_TOKEN."
+        )
 
     @app.event("message")
     def handle_message_events(event, client, logger):  # type: ignore[no-untyped-def]
