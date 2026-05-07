@@ -1,2 +1,1 @@
-worker: python -m src.app
-web: python -m src.oauth_web
+web: python -m src.combined_service

@@ -4,10 +4,9 @@ Overview
 
 This project listens for Slack messages from a specific user, parses weekly metrics, renders a PDF report (via Playwright) in-memory, and uploads the PDF to Slack. This README explains how to deploy the pipeline to Railway using the provided Dockerfile (recommended) or via Git integration.
 
-For multi-workspace installs, deploy TWO Railway services from the same repo:
+For multi-workspace installs, deploy ONE Railway service from the same repo:
 
-- Worker service: runs the Slack Socket Mode bot (`python -m src.app`)
-- Web service: runs OAuth install/callback endpoints (`python -m src.oauth_web`)
+- Combined service: runs the Slack Socket Mode bot and OAuth install/callback endpoints together (`python -m src.combined_service`)
 
 What I'll cover
 
@@ -55,10 +54,8 @@ Important for multi-workspace OAuth mode:
 
 Railway Service Type & Resource Guidance
 
-- Service type: **Worker** (not HTTP) — the app uses Slack Socket Mode and runs continuously.
-- Service types for multi-workspace install:
-  - **Worker** service for bot runtime (`python -m src.app`)
-  - **Web** service for OAuth endpoints (`python -m src.oauth_web`)
+- Service type: **Web** — Railway needs an HTTP port for the OAuth redirect URL.
+- The combined service also runs the Socket Mode worker in a background thread.
 - Minimum recommended resources for Playwright:
   - 1 vCPU, 2 GB RAM — *may* be sufficient but could be slow launching browsers on cold starts.
   - Recommended: **2 vCPU, 4 GB RAM** for reliable performance and lower latency when Playwright launches Chromium.
@@ -71,9 +68,12 @@ Option A — GitHub integration (recommended)
 2. In Railway, create a new project → Add a service → Deploy from GitHub.
 3. Choose your repository and branch.
 4. Railway will detect `Dockerfile` and build the image.
-5. In the service settings, set the start command to the default `worker: python -m src.app` via the `Procfile` or simply ensure Railway runs the container's CMD.
-6. Add Environment Variables (see list above).
-7. Deploy. Monitor logs in Railway to verify Slack socket connects.
+5. Railway will detect `Dockerfile` and build the image.
+6. Ensure the service runs `python -m src.combined_service` (the Dockerfile already does this).
+7. Add Environment Variables (see list above).
+8. Generate a Railway domain for that service and copy it.
+9. Set `SLACK_REDIRECT_URI=https://<your-domain>/slack/oauth_redirect` in Railway and in Slack OAuth settings.
+10. Deploy. Monitor logs in Railway to verify Slack socket connects and the web server starts.
 
 Option B — Build & deploy Docker image manually
 1. Build image locally or in CI:
@@ -112,15 +112,13 @@ Railway-specific quick steps (GitHub deploy)
    - https://railway.app/
    - `npm i -g railway` (optional)
 2. From Railway dashboard → New Project → Deploy from GitHub → select repo → Deploy
-3. Create two services from the same repo:
-  - Service A (worker): start command `python -m src.app`
-  - Service B (web): start command `python -m src.oauth_web`
-4. Generate a domain for the web service and copy it
-5. Set `SLACK_REDIRECT_URI=https://<web-domain>/slack/oauth_redirect`
-6. In Slack app settings, set Redirect URL to the same value
-7. Set environment variables in both services
-8. Allocate resources (2 vCPU, 4 GB RAM recommended for worker)
-9. Start services and watch logs
+3. Create one service from the repo.
+4. Generate a domain for that service and copy it.
+5. Set `SLACK_REDIRECT_URI=https://<your-domain>/slack/oauth_redirect`.
+6. In Slack app settings, set Redirect URL to the same value.
+7. Set environment variables once on the service.
+8. Allocate resources (2 vCPU, 4 GB RAM recommended).
+9. Start the service and watch logs.
 
 What to watch in the logs
 

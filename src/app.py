@@ -25,8 +25,7 @@ logging.basicConfig(
 logger = logging.getLogger("admanager_reports")
 
 
-def main() -> None:
-    settings = load_settings()
+def create_worker_app(settings):  # type: ignore[no-untyped-def]
     fx_service = FxService(
         api_url=settings.fx_api_url,
         api_key=settings.fx_api_key,
@@ -54,6 +53,13 @@ def main() -> None:
         raise ValueError(
             "Missing Slack bot configuration. Provide either OAuth client credentials or SLACK_BOT_TOKEN."
         )
+
+    return settings, app, fx_service, groq_service, idempotency, history
+
+
+def run_worker() -> None:
+    settings = load_settings()
+    settings, app, fx_service, groq_service, idempotency, history = create_worker_app(settings)
 
     @app.event("message")
     def handle_message_events(event, client, logger):  # type: ignore[no-untyped-def]
@@ -172,6 +178,10 @@ def main() -> None:
             # Optional operator alert can be added here.
 
     SocketModeHandler(app, settings.slack_app_token).start()
+
+
+def main() -> None:
+    run_worker()
 
 
 if __name__ == "__main__":

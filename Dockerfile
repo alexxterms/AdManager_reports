@@ -15,5 +15,5 @@ RUN playwright install --with-deps || true
 
 ENV PYTHONUNBUFFERED=1
 
-# Start as a worker process (Railway: choose "Worker")
-CMD ["python", "-m", "src.app"]
+# Start the combined OAuth + Socket Mode service (Railway: expose a web domain on this service)
+CMD ["python", "-m", "src.combined_service"]
